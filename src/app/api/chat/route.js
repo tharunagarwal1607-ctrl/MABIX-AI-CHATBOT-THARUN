@@ -41,27 +41,29 @@ Core Capabilities & Guidelines:
    - Use rich markdown: bolding, bullet points, headers, tables, and formatted code blocks with syntax highlighting.`;
 }
 
-// Multimodal and High-Speed models on OpenRouter
-const FAST_MODELS = [
+// Reliable models — ordered by speed and reliability
+const MODELS = [
+  'google/gemini-2.0-flash-001',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'meta-llama/llama-3.2-11b-vision-instruct:free',
+  'mistralai/mistral-small-24b-instruct-2501:free',
+  'google/gemini-2.0-flash-exp:free',
+];
+
+// Vision-capable models for image analysis
+const VISION_MODELS = [
   'google/gemini-2.0-flash-001',
   'meta-llama/llama-3.2-11b-vision-instruct:free',
   'google/gemini-2.0-flash-exp:free',
-  'mistralai/mistral-small-24b-instruct-2501:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'nvidia/nemotron-3.5-lightning:free',
-  'liquid/lfm-2.5-2.6b:free',
-  'inclusionai/ling-3.0-flash-fin:free',
-  'cohere/north-mini-code:free',
 ];
 
-// Real-Time Web & Wikipedia Intelligence Fetcher (< 1.5s in parallel)
+// Real-Time Web & Wikipedia Intelligence Fetcher
 async function fetchRealTimeIntelligence(query) {
   let webSnippets = [];
   let wikiResults = [];
   let imageUrl = null;
   let imageTitle = null;
 
-  // 1. DuckDuckGo Web Search for latest news, present status, and facts
   const webPromise = (async () => {
     try {
       const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
@@ -71,7 +73,7 @@ async function fetchRealTimeIntelligence(query) {
           Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
         },
-        signal: AbortSignal.timeout(2200),
+        signal: AbortSignal.timeout(3000),
       });
       const html = await res.text();
       const regex = /<a class="result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
@@ -94,7 +96,6 @@ async function fetchRealTimeIntelligence(query) {
     }
   })();
 
-  // 2. Wikipedia API for authoritative summaries + official high-resolution photos
   const wikiPromise = (async () => {
     try {
       const cleanQ =
@@ -108,7 +109,7 @@ async function fetchRealTimeIntelligence(query) {
       const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
         cleanQ
       )}&utf8=&format=json&origin=*`;
-      const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(2000) });
+      const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(3000) });
       const searchData = await searchRes.json();
       const results = searchData.query?.search || [];
       if (!results.length) return;
@@ -117,7 +118,7 @@ async function fetchRealTimeIntelligence(query) {
       const pageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(
         titles
       )}&prop=pageimages|extracts&exintro=1&explaintext=1&pithumbsize=1000&format=json&origin=*`;
-      const pageRes = await fetch(pageUrl, { signal: AbortSignal.timeout(2000) });
+      const pageRes = await fetch(pageUrl, { signal: AbortSignal.timeout(3000) });
       const pageData = await pageRes.json();
       const pages = Object.values(pageData.query?.pages || {});
 
@@ -143,7 +144,7 @@ async function fetchRealTimeIntelligence(query) {
   return { webSnippets, wikiResults, imageUrl, imageTitle };
 }
 
-async function callOpenRouterWithTimeout(apiKey, messages, model, timeoutMs = 4500) {
+async function callModel(apiKey, messages, model, timeoutMs = 15000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -198,15 +199,16 @@ export async function POST(request) {
         ? lastUserMsgObj.content.find((c) => c.type === 'text')?.text || ''
         : '';
 
-    // Fetch live web search snippets + Wikipedia facts + real photo if text query is present
-    let liveContext = '';
-    const hasAttachments = Boolean(
-      lastUserMsgObj?.attachments?.length ||
+    // Check if this request has image attachments
+    const hasImageAttachments = Boolean(
+      lastUserMsgObj?.attachments?.some((a) => a.isImage) ||
         (Array.isArray(lastUserMsgObj?.content) &&
           lastUserMsgObj.content.some((c) => c.type === 'image_url'))
     );
 
-    if (lastUserText && lastUserText.trim().length > 2 && !hasAttachments) {
+    // Fetch live web intelligence in parallel (only for text queries, not image uploads)
+    let liveContext = '';
+    if (lastUserText && lastUserText.trim().length > 2 && !hasImageAttachments) {
       const intel = await fetchRealTimeIntelligence(lastUserText);
 
       const parts = [];
@@ -230,20 +232,19 @@ export async function POST(request) {
 
     const fullSystemPrompt = getSystemPrompt() + liveContext;
 
-    // Convert client messages to OpenAI / OpenRouter Multimodal format
+    // Convert client messages to OpenRouter multimodal format
     const openRouterMessages = [
       { role: 'system', content: fullSystemPrompt },
       ...messages.map((m) => {
         const role = m.role === 'assistant' ? 'assistant' : 'user';
 
-        // Check if message has attached images or text documents
         const attachments = m.attachments || [];
         const imageAttachments = attachments.filter((a) => a.isImage && a.dataUrl);
         const docAttachments = attachments.filter((a) => !a.isImage && a.textContent);
 
         let userText = typeof m.content === 'string' ? m.content : '';
 
-        // Append document contents to the user text prompt
+        // Append document contents
         if (docAttachments.length > 0) {
           const docSection = docAttachments
             .map(
@@ -254,21 +255,18 @@ export async function POST(request) {
           userText = (userText ? userText + '\n' : '') + docSection;
         }
 
-        // If message has images, use Multimodal Content Array format
+        // If message has images, use multimodal content array
         if (imageAttachments.length > 0) {
           const contentArray = [
             { type: 'text', text: userText || 'Please analyze this attached image in detail.' },
             ...imageAttachments.map((img) => ({
               type: 'image_url',
-              image_url: {
-                url: img.dataUrl,
-              },
+              image_url: { url: img.dataUrl },
             })),
           ];
           return { role, content: contentArray };
         }
 
-        // If already in array content format
         if (Array.isArray(m.content)) {
           return { role, content: m.content };
         }
@@ -277,20 +275,45 @@ export async function POST(request) {
       }),
     ];
 
-    let response = null;
+    // Select model list based on whether we need vision
+    const modelList = hasImageAttachments ? VISION_MODELS : MODELS;
 
-    // Fast failover loop (4s limit per model call)
-    for (const model of FAST_MODELS) {
-      response = await callOpenRouterWithTimeout(apiKey, openRouterMessages, model, 4000);
+    // Try models with generous timeouts (15s first, 20s fallbacks)
+    let response = null;
+    for (let i = 0; i < modelList.length; i++) {
+      const model = modelList[i];
+      const timeout = i === 0 ? 15000 : 20000; // First model 15s, fallbacks 20s
+      console.log(`[MABIX] Trying model: ${model} (timeout: ${timeout}ms)`);
+      
+      response = await callModel(apiKey, openRouterMessages, model, timeout);
+      
       if (response && response.ok) {
+        console.log(`[MABIX] Success with model: ${model}`);
         break;
       }
+      
+      // If we got a rate limit (429), try next model immediately
+      if (response && response.status === 429) {
+        console.log(`[MABIX] Rate limited on ${model}, trying next...`);
+        response = null;
+        continue;
+      }
+      
+      // For other errors, log and try next
+      if (response && !response.ok) {
+        console.log(`[MABIX] Model ${model} returned status ${response.status}`);
+        response = null;
+        continue;
+      }
+      
+      // Null response means timeout/network error
+      console.log(`[MABIX] Model ${model} timed out`);
       response = null;
     }
 
     if (!response) {
       return NextResponse.json(
-        { error: 'MABIX is experiencing high network load. Please resend your message.' },
+        { error: 'MABIX could not reach the AI servers. Please try again in a moment.' },
         { status: 503 }
       );
     }
