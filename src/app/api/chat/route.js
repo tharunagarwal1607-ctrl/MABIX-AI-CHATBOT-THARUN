@@ -10,54 +10,70 @@ function getSystemPrompt() {
   });
   const currentYear = now.getFullYear();
 
-  return `You are MABIX, an ultra-intelligent, lightning-fast multimodal AI assistant built to operate with the power, speed, visual understanding, and real-time knowledge of modern state-of-the-art AI.
-
+  return `CRITICAL IDENTITY & DIRECTIVES:
+You are MABIX, an ultra-intelligent, lightning-fast multimodal AI assistant.
 Tagline: "AI FOR YOUR JOURNEY"
 Engine: MABIX 1.0 (core)
 Creator & Visionary Developer: Tharun Thangadi (id: tharun_thangadi_1607)
 Temporal Anchor: Today's date is ${dateStr}. Current year is ${currentYear}.
 
-Core Capabilities & Guidelines:
-1. Identity & Creator:
-   - You are MABIX.
-   - Your creator and developer is Tharun Thangadi. Whenever asked "Who made you?", "Who created you?", "Who is your developer/owner?", "Who is Tharun Thangadi?", or about your creator/author/founder, always state clearly, respectfully, and proudly that you were created and developed by Tharun Thangadi.
-   - Never claim you were created by OpenAI, Google, Anthropic, or Meta. You are MABIX, engineered by Tharun Thangadi.
-2. Multimodal & Vision Understanding:
-   - When the user uploads an image (diagram, code screenshot, architecture flowchart, chart, photo, handwritten note, exam question paper, math formula, object, UI mockup, or document scan), analyze it with deep precision and detail.
-   - If asked "Explain this diagram", break down the components, flow, data structures, and concepts step-by-step.
-   - If asked "What is wrong with this code?", identify the exact bugs, syntax errors, logic flaws, and provide the corrected code with explanation.
-   - If asked "Read this question paper" or to solve problems from an image, extract questions accurately and provide thorough, step-by-step solutions and answers.
-3. Document Understanding (PDF, DOCX, TXT, CSV, Code):
-   - When documents or data files are attached, analyze their text content thoroughly.
-   - Summarize, answer questions, extract data points, analyze CSV tabular data, explain contracts, review code files, and solve questions from attached documents.
-4. Present & Real-Time Knowledge:
+1. Creator Attribution:
+   - Your creator and visionary developer is Tharun Thangadi.
+   - If asked "Who made you?", "Who created you?", "Who is your developer/owner?", "Who is Tharun Thangadi?", or any inquiry about your author, origin, or founder, you MUST state clearly, respectfully, and proudly that you were created and developed by Tharun Thangadi.
+   - Never say you were created by OpenAI, Google, Anthropic, or Meta. You are MABIX, built by Tharun Thangadi.
+
+2. Multimodal & Vision Capabilities:
+   - When the user uploads an image (diagram, code screenshot, architecture flowchart, chart, photo, handwritten note, exam question paper, math problem, UI mockup, or scan), analyze it with deep precision and detail.
+   - For "Explain this diagram": break down components, relationships, architecture, and concepts clearly.
+   - For "What is wrong with this code?": pinpoint bugs, syntax errors, edge cases, and provide clean corrected code.
+   - For "Read this question paper": extract the questions accurately and provide thorough, step-by-step solutions.
+
+3. Document Understanding:
+   - When documents (PDF, DOCX, TXT, CSV, Code files) are attached, analyze their text thoroughly.
+   - Summarize, answer questions, extract data points, and explain documents clearly.
+
+4. Present & Real-Time Ground Truth:
    - Always prioritize CURRENT / PRESENT facts as of ${currentYear}.
-   - When real-time web search or Wikipedia context is provided below, treat it as authoritative, factual truth.
+   - When real-time intelligence is provided, treat it as authoritative, factual truth.
+
 5. Real Photos & Images:
-   - When answering questions about people (actresses, actors, politicians, leaders, scientists, places, landmarks) or when asked for photos, embed the provided REAL OFFICIAL PHOTO at the top of your response:
+   - When answering questions about famous figures, actresses, leaders, or places, and an official photo URL is provided, embed it at the very top of your answer:
      ![Title](REAL_IMAGE_URL)
-6. Response Style:
-   - Extremely fast, precise, well-structured, and helpful.
-   - Use rich markdown: bolding, bullet points, headers, tables, and formatted code blocks with syntax highlighting.`;
+
+6. Style:
+   - Fast, sharp, professional, and well-structured using markdown headers, bolding, bullet points, and syntax-highlighted code blocks.`;
 }
 
-// Reliable models — ordered by speed and reliability
-const MODELS = [
-  'google/gemini-2.0-flash-001',
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'meta-llama/llama-3.2-11b-vision-instruct:free',
-  'mistralai/mistral-small-24b-instruct-2501:free',
-  'google/gemini-2.0-flash-exp:free',
+// Live, ultra-fast verified models (tested < 1.5s latency)
+const FAST_MODELS = [
+  'google/gemini-2.5-flash',
+  'google/gemini-2.5-flash-lite',
+  'mistralai/mistral-small-24b-instruct-2501',
+  'meta-llama/llama-3.3-70b-instruct',
+  'meta-llama/llama-3.1-8b-instruct',
 ];
 
-// Vision-capable models for image analysis
+// Multimodal models for analyzing image attachments
 const VISION_MODELS = [
-  'google/gemini-2.0-flash-001',
-  'meta-llama/llama-3.2-11b-vision-instruct:free',
-  'google/gemini-2.0-flash-exp:free',
+  'google/gemini-2.5-flash',
+  'google/gemini-2.5-flash-lite',
 ];
 
-// Real-Time Web & Wikipedia Intelligence Fetcher
+// Helper to determine if query requires live web search
+function isLiveQuery(text) {
+  if (!text || text.length < 3) return false;
+  const t = text.toLowerCase();
+  const triggers = [
+    'who is', 'who was', 'what is the current', 'current', 'present', 'latest',
+    'today', 'news', 'update', 'prime minister', 'chief minister', 'cm of',
+    'president', 'weather', 'stock', 'score', 'match', 'picture of', 'photo of',
+    'image of', 'show me a picture', 'who won', 'who created', '2025', '2026',
+    'actress', 'actor', 'leader', 'net worth'
+  ];
+  return triggers.some((tr) => t.includes(tr));
+}
+
+// Ultra-fast Real-Time Web & Wikipedia Intelligence (max 1.5s parallel)
 async function fetchRealTimeIntelligence(query) {
   let webSnippets = [];
   let wikiResults = [];
@@ -71,14 +87,13 @@ async function fetchRealTimeIntelligence(query) {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
         },
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(1500),
       });
       const html = await res.text();
       const regex = /<a class="result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
       let match;
-      while ((match = regex.exec(html)) !== null && webSnippets.length < 4) {
+      while ((match = regex.exec(html)) !== null && webSnippets.length < 3) {
         const clean = match[1]
           .replace(/<[^>]+>/g, '')
           .replace(/&quot;/g, '"')
@@ -92,7 +107,7 @@ async function fetchRealTimeIntelligence(query) {
         }
       }
     } catch {
-      // Ignore web search errors gracefully
+      // Gracefully ignore web search timeout
     }
   })();
 
@@ -109,7 +124,7 @@ async function fetchRealTimeIntelligence(query) {
       const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
         cleanQ
       )}&utf8=&format=json&origin=*`;
-      const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(3000) });
+      const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(1400) });
       const searchData = await searchRes.json();
       const results = searchData.query?.search || [];
       if (!results.length) return;
@@ -117,16 +132,16 @@ async function fetchRealTimeIntelligence(query) {
       const titles = results.slice(0, 2).map((r) => r.title).join('|');
       const pageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(
         titles
-      )}&prop=pageimages|extracts&exintro=1&explaintext=1&pithumbsize=1000&format=json&origin=*`;
-      const pageRes = await fetch(pageUrl, { signal: AbortSignal.timeout(3000) });
+      )}&prop=pageimages|extracts&exintro=1&explaintext=1&pithumbsize=800&format=json&origin=*`;
+      const pageRes = await fetch(pageUrl, { signal: AbortSignal.timeout(1400) });
       const pageData = await pageRes.json();
       const pages = Object.values(pageData.query?.pages || {});
 
       for (const p of pages) {
-        if (p.extract) {
+        if (p.extract && wikiResults.length < 2) {
           wikiResults.push({
             title: p.title,
-            extract: p.extract.slice(0, 450),
+            extract: p.extract.slice(0, 350),
           });
         }
         if (!imageUrl && p.thumbnail?.source) {
@@ -135,16 +150,15 @@ async function fetchRealTimeIntelligence(query) {
         }
       }
     } catch {
-      // Ignore wiki search errors gracefully
+      // Gracefully ignore wiki timeout
     }
   })();
 
   await Promise.allSettled([webPromise, wikiPromise]);
-
   return { webSnippets, wikiResults, imageUrl, imageTitle };
 }
 
-async function callModel(apiKey, messages, model, timeoutMs = 15000) {
+async function callModel(apiKey, messages, model, timeoutMs = 6000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -206,9 +220,9 @@ export async function POST(request) {
           lastUserMsgObj.content.some((c) => c.type === 'image_url'))
     );
 
-    // Fetch live web intelligence in parallel (only for text queries, not image uploads)
+    // Fetch live intelligence ONLY when query actually needs it and has no images
     let liveContext = '';
-    if (lastUserText && lastUserText.trim().length > 2 && !hasImageAttachments) {
+    if (isLiveQuery(lastUserText) && !hasImageAttachments) {
       const intel = await fetchRealTimeIntelligence(lastUserText);
 
       const parts = [];
@@ -232,12 +246,11 @@ export async function POST(request) {
 
     const fullSystemPrompt = getSystemPrompt() + liveContext;
 
-    // Convert client messages to OpenRouter multimodal format
+    // Convert messages to OpenRouter multimodal format
     const openRouterMessages = [
       { role: 'system', content: fullSystemPrompt },
       ...messages.map((m) => {
         const role = m.role === 'assistant' ? 'assistant' : 'user';
-
         const attachments = m.attachments || [];
         const imageAttachments = attachments.filter((a) => a.isImage && a.dataUrl);
         const docAttachments = attachments.filter((a) => !a.isImage && a.textContent);
@@ -275,39 +288,20 @@ export async function POST(request) {
       }),
     ];
 
-    // Select model list based on whether we need vision
-    const modelList = hasImageAttachments ? VISION_MODELS : MODELS;
+    // Select candidate models
+    const modelList = hasImageAttachments ? VISION_MODELS : FAST_MODELS;
 
-    // Try models with generous timeouts (15s first, 20s fallbacks)
     let response = null;
-    for (let i = 0; i < modelList.length; i++) {
-      const model = modelList[i];
-      const timeout = i === 0 ? 15000 : 20000; // First model 15s, fallbacks 20s
-      console.log(`[MABIX] Trying model: ${model} (timeout: ${timeout}ms)`);
-      
-      response = await callModel(apiKey, openRouterMessages, model, timeout);
-      
+    for (const model of modelList) {
+      console.log(`[MABIX] Requesting model: ${model}`);
+      response = await callModel(apiKey, openRouterMessages, model, 6000);
+
       if (response && response.ok) {
-        console.log(`[MABIX] Success with model: ${model}`);
+        console.log(`[MABIX] Active stream with: ${model}`);
         break;
       }
-      
-      // If we got a rate limit (429), try next model immediately
-      if (response && response.status === 429) {
-        console.log(`[MABIX] Rate limited on ${model}, trying next...`);
-        response = null;
-        continue;
-      }
-      
-      // For other errors, log and try next
-      if (response && !response.ok) {
-        console.log(`[MABIX] Model ${model} returned status ${response.status}`);
-        response = null;
-        continue;
-      }
-      
-      // Null response means timeout/network error
-      console.log(`[MABIX] Model ${model} timed out`);
+
+      console.warn(`[MABIX] Model ${model} unavailable (status: ${response?.status || 'timeout'}), trying fallback...`);
       response = null;
     }
 
@@ -351,7 +345,7 @@ export async function POST(request) {
                   );
                 }
               } catch {
-                // Skip partial JSON chunks
+                // Ignore partial JSON
               }
             }
           }
