@@ -2,13 +2,81 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-export default function MessageInput({ onSend, isLoading }) {
+export default function MessageInput({
+  onSend,
+  isLoading,
+  onOpenImagineWithImage = null,
+  activeModel = 'mabix-1.0',
+}) {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState([]);
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  // Initialize Speech Recognition (Web Speech API)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        setSpeechSupported(true);
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+          let currentTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          if (currentTranscript) {
+            setInput((prev) => {
+              const base = prev.trim();
+              return base ? `${base} ${currentTranscript.trim()}` : currentTranscript.trim();
+            });
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.warn('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!speechSupported) {
+      alert('Voice dictation is not supported in this browser. Please use Google Chrome, Edge, or Safari.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current?.start();
+        setIsListening(true);
+      } catch (err) {
+        console.warn('Speech start error:', err);
+        setIsListening(false);
+      }
+    }
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -43,8 +111,13 @@ export default function MessageInput({ onSend, isLoading }) {
     }
 
     // 2. Process Plain Text / CSV / Code
-    const textExtensions = ['.txt', '.csv', '.json', '.md', '.py', '.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.xml', '.sql', '.log'];
-    const isTextFile = textExtensions.some((ext) => fileName.toLowerCase().endsWith(ext)) || file.type.startsWith('text/');
+    const textExtensions = [
+      '.txt', '.csv', '.json', '.md', '.py', '.js', '.jsx', '.ts', '.tsx',
+      '.html', '.css', '.xml', '.sql', '.log'
+    ];
+    const isTextFile =
+      textExtensions.some((ext) => fileName.toLowerCase().endsWith(ext)) ||
+      file.type.startsWith('text/');
 
     if (isTextFile) {
       return new Promise((resolve) => {
@@ -100,7 +173,6 @@ export default function MessageInput({ onSend, isLoading }) {
 
     const newAttachments = [];
     for (const file of Array.from(fileList)) {
-      // Limit file size to 25MB
       if (file.size > 25 * 1024 * 1024) {
         alert(`File ${file.name} exceeds 25MB limit.`);
         continue;
@@ -122,7 +194,6 @@ export default function MessageInput({ onSend, isLoading }) {
     setAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
-  // Clipboard paste support (e.g. pasting screenshot)
   const handlePaste = (e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -140,7 +211,6 @@ export default function MessageInput({ onSend, isLoading }) {
     }
   };
 
-  // Drag & drop handlers
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -160,10 +230,21 @@ export default function MessageInput({ onSend, isLoading }) {
   };
 
   const handleSend = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    }
+
     const trimmed = input.trim();
     if ((!trimmed && attachments.length === 0) || isLoading || isProcessingFiles) return;
 
-    onSend(trimmed || (attachments.some((a) => a.isImage) ? 'Please analyze this attached image in detail.' : 'Please analyze the attached document.'), attachments);
+    onSend(
+      trimmed ||
+        (attachments.some((a) => a.isImage)
+          ? 'Please analyze this attached image in detail.'
+          : 'Please analyze the attached document.'),
+      attachments
+    );
     setInput('');
     setAttachments([]);
     if (textareaRef.current) {
@@ -203,11 +284,16 @@ export default function MessageInput({ onSend, isLoading }) {
     }
   };
 
-  const canSend = (input.trim().length > 0 || attachments.length > 0) && !isLoading && !isProcessingFiles;
+  const canSend =
+    (input.trim().length > 0 || attachments.length > 0) &&
+    !isLoading &&
+    !isProcessingFiles;
+
+  const isUltra = activeModel === 'mabix-2.0-ultra';
 
   return (
     <div
-      className={`input-area ${isDragging ? 'drag-over' : ''}`}
+      className={`input-area ${isDragging ? 'drag-over' : ''} ${isUltra ? 'ultra-theme' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -240,6 +326,19 @@ export default function MessageInput({ onSend, isLoading }) {
                   </span>
                   <span className="attachment-size">{formatFileSize(att.size)}</span>
                 </div>
+
+                {/* Edit in Imagine Studio shortcut for images */}
+                {att.isImage && onOpenImagineWithImage && (
+                  <button
+                    type="button"
+                    className="attachment-edit-btn"
+                    onClick={() => onOpenImagineWithImage(att.dataUrl)}
+                    title="Edit in Imagine Photo Studio"
+                  >
+                    🎨 Edit
+                  </button>
+                )}
+
                 <button
                   type="button"
                   className="attachment-remove-btn"
@@ -260,7 +359,18 @@ export default function MessageInput({ onSend, isLoading }) {
           </div>
         )}
 
+        {isListening && (
+          <div className="voice-listening-banner">
+            <div className="voice-pulse-ring"></div>
+            <span className="voice-listening-text">🎙️ Listening... Speak naturally into your mic</span>
+            <button type="button" className="voice-stop-btn" onClick={toggleListening}>
+              Done
+            </button>
+          </div>
+        )}
+
         <div className="input-row">
+          {/* Upload Button */}
           <button
             type="button"
             className="attach-btn"
@@ -271,10 +381,21 @@ export default function MessageInput({ onSend, isLoading }) {
             <span className="attach-label">Upload</span>
           </button>
 
+          {/* Voice Microphone Button */}
+          <button
+            type="button"
+            className={`mic-btn ${isListening ? 'listening' : ''}`}
+            onClick={toggleListening}
+            title={isListening ? 'Stop listening' : 'Dictate with Microphone'}
+          >
+            <span className="mic-icon">{isListening ? '🔴' : '🎙️'}</span>
+          </button>
+
+          {/* Chat Text Input */}
           <textarea
             ref={textareaRef}
             className="message-input"
-            placeholder="Ask MABIX"
+            placeholder={isListening ? 'Listening...' : 'Ask MABIX'}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -283,8 +404,9 @@ export default function MessageInput({ onSend, isLoading }) {
             disabled={isLoading}
           />
 
+          {/* Send Button */}
           <button
-            className={`send-btn ${canSend ? 'active' : ''}`}
+            className={`send-btn ${canSend ? 'active' : ''} ${isUltra ? 'gold-btn' : ''}`}
             onClick={handleSend}
             disabled={!canSend}
             title="Send message (Enter)"
@@ -295,7 +417,9 @@ export default function MessageInput({ onSend, isLoading }) {
       </div>
 
       <p className="input-disclaimer">
-        MABIX 1.0 (core) &bull; Multimodal AI with Vision & Document Understanding &bull; Verify important facts
+        {isUltra
+          ? 'MABIX 2.0 (core ultra) • Creative Photo Studio & Deep Multimodal Intelligence'
+          : 'MABIX 1.0 (core) • Multimodal AI with Vision & Document Understanding'}
       </p>
     </div>
   );
