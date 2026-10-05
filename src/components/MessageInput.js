@@ -327,8 +327,8 @@ export default function MessageInput({
                   <span className="attachment-size">{formatFileSize(att.size)}</span>
                 </div>
 
-                {/* Edit in Imagine Studio shortcut for images */}
-                {att.isImage && onOpenImagineWithImage && (
+                {/* Edit in Imagine Studio shortcut for images - Only in MABIX 2.0 Core Ultra */}
+                {isUltra && att.isImage && onOpenImagineWithImage && (
                   <button
                     type="button"
                     className="attachment-edit-btn"
@@ -359,7 +359,7 @@ export default function MessageInput({
           </div>
         )}
 
-        {isListening && (
+        {isUltra && isListening && (
           <div className="voice-listening-banner">
             <div className="voice-pulse-ring"></div>
             <span className="voice-listening-text">🎙️ Listening... Speak naturally into your mic</span>
@@ -381,15 +381,17 @@ export default function MessageInput({
             <span className="attach-label">Upload</span>
           </button>
 
-          {/* Voice Microphone Button */}
-          <button
-            type="button"
-            className={`mic-btn ${isListening ? 'listening' : ''}`}
-            onClick={toggleListening}
-            title={isListening ? 'Stop listening' : 'Dictate with Microphone'}
-          >
-            <span className="mic-icon">{isListening ? '🔴' : '🎙️'}</span>
-          </button>
+          {/* Voice Microphone Button - Exclusive to MABIX 2.0 Core Ultra */}
+          {isUltra && (
+            <button
+              type="button"
+              className={`mic-btn ${isListening ? 'listening' : ''}`}
+              onClick={toggleListening}
+              title={isListening ? 'Stop listening' : 'Dictate with Microphone'}
+            >
+              <span className="mic-icon">{isListening ? '🔴' : '🎙️'}</span>
+            </button>
+          )}
 
           {/* Chat Text Input */}
           <textarea
