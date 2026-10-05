@@ -9,6 +9,7 @@ export default function Sidebar({
   isOpen,
   onToggle,
   onOpenImagine,
+  onOpenLibrary,
   onOpenTasks,
   onOpenProjects,
   onOpenDiscover,
@@ -46,7 +47,7 @@ export default function Sidebar({
               <span className="nav-item-text">New chat</span>
             </button>
 
-            <button className="sidebar-nav-item" onClick={onOpenTasks}>
+            <button className="sidebar-nav-item" onClick={onOpenLibrary}>
               <span className="nav-item-icon">🗂️</span>
               <span className="nav-item-text">Library</span>
             </button>
