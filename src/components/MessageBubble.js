@@ -137,11 +137,47 @@ export default function MessageBubble({ message }) {
 
   return (
     <div className="message bot-message">
-      <div className="bot-avatar-container" title="MABIX 1.0 (core)">
+      <div className="bot-avatar-container" title="MABIX AI">
         <img src="/logo.png" alt="MABIX Avatar" className="bot-avatar-img" />
       </div>
       <div className="message-content">
-        <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
+        {/* Render In-Chat Processed / Background-Removed Image (ChatGPT 5.5 style) */}
+        {message.editedImage && (
+          <div className="in-chat-edited-image-card">
+            <div className="in-chat-card-header">
+              <div className="in-chat-badge-group">
+                <span className="in-chat-ultra-badge">⚡ MABIX 2.0 ULTRA</span>
+                <span className="in-chat-action-badge">{message.editLabel || 'Background Removed'}</span>
+              </div>
+              <a
+                href={message.editedImage}
+                download={`MABIX-Cutout-${Date.now()}.png`}
+                className="in-chat-download-btn"
+                title="Download high-resolution image"
+              >
+                💾 Download HD
+              </a>
+            </div>
+
+            <div className="in-chat-image-preview-box">
+              <img
+                src={message.editedImage}
+                alt={message.editLabel || 'Processed Photo'}
+                className="in-chat-result-img"
+              />
+            </div>
+
+            <div className="in-chat-card-footer">
+              <span className="in-chat-card-hint">
+                ✓ Cutout rendered directly in chat • Click download for transparent PNG
+              </span>
+            </div>
+          </div>
+        )}
+
+        {message.content && (
+          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
+        )}
       </div>
       <div className="message-time">{formatTime(message.timestamp)}</div>
     </div>
