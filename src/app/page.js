@@ -6,8 +6,10 @@ import Header from '@/components/Header';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import ChatArea from '@/components/ChatArea';
 import MessageInput from '@/components/MessageInput';
+import PhotoEditorModal from '@/components/PhotoEditorModal';
 
 const STORAGE_KEY = 'MABIX_chats';
+const MODEL_STORAGE_KEY = 'MABIX_active_model';
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -29,9 +31,22 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // MABIX Engine State: 'mabix-1.0' vs 'mabix-2.0-ultra'
+  const [activeModel, setActiveModel] = useState('mabix-1.0');
+
+  // Imagine Photo Studio Modal State
+  const [isImagineOpen, setIsImagineOpen] = useState(false);
+  const [imagineInitialImage, setImagineInitialImage] = useState(null);
+
   // Load from localStorage on mount
   useEffect(() => {
     try {
+      if (typeof window !== 'undefined') {
+        setIsSidebarOpen(window.innerWidth > 768);
+      }
+      const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+      if (savedModel) setActiveModel(savedModel);
+
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -56,11 +71,12 @@ export default function Home() {
     setIsHydrated(true);
   }, []);
 
-  // Save to localStorage on change (safely handle quota limits)
+  // Save to localStorage on change
   useEffect(() => {
     if (!isHydrated) return;
     try {
-      // Create a storage-safe copy (strip huge base64 strings if storage gets too full)
+      localStorage.setItem(MODEL_STORAGE_KEY, activeModel);
+
       const storageChats = chats.map((chat) => ({
         ...chat,
         messages: chat.messages.map((m) => {
@@ -73,7 +89,6 @@ export default function Home() {
                 size: a.size,
                 type: a.type,
                 isImage: a.isImage,
-                // Keep dataUrl only if it's reasonably small
                 dataUrl: a.dataUrl && a.dataUrl.length < 500000 ? a.dataUrl : undefined,
                 textContent: a.textContent && a.textContent.length < 10000 ? a.textContent : undefined,
               })),
@@ -90,7 +105,7 @@ export default function Home() {
     } catch (e) {
       console.warn('localStorage save warning:', e);
     }
-  }, [chats, activeChatId, isHydrated]);
+  }, [chats, activeChatId, activeModel, isHydrated]);
 
   const activeChat = chats.find((c) => c.id === activeChatId) || null;
 
@@ -124,6 +139,22 @@ export default function Home() {
     [activeChatId]
   );
 
+  const handleOpenImagine = useCallback((image = null) => {
+    setImagineInitialImage(image);
+    setIsImagineOpen(true);
+    setIsSidebarOpen(false);
+  }, []);
+
+  const handleSelectModel = useCallback((modelId) => {
+    setActiveModel(modelId);
+  }, []);
+
+  const handleToggleUpgrade = useCallback(() => {
+    setActiveModel((prev) =>
+      prev === 'mabix-2.0-ultra' ? 'mabix-1.0' : 'mabix-2.0-ultra'
+    );
+  }, []);
+
   const sendMessage = useCallback(
     async (text, attachments = []) => {
       const trimmed = (text || '').trim();
@@ -136,7 +167,6 @@ export default function Home() {
         timestamp: Date.now(),
       };
 
-      // Add user message to the active chat
       setChats((prev) =>
         prev.map((chat) => {
           if (chat.id !== activeChatId) return chat;
@@ -144,7 +174,6 @@ export default function Home() {
             ...chat,
             messages: [...chat.messages, userMessage],
           };
-          // Update title from first user message
           if (chat.messages.filter((m) => m.role === 'user').length === 0) {
             const titleSource = trimmed || attachments[0]?.name || 'New Conversation';
             updated.title = titleSource.slice(0, 35) + (titleSource.length > 35 ? '...' : '');
@@ -156,7 +185,6 @@ export default function Home() {
       setIsLoading(true);
 
       try {
-        // Get current messages for the API call
         const currentChat = chats.find((c) => c.id === activeChatId);
         const allMessages = [
           ...(currentChat?.messages || []),
@@ -170,7 +198,10 @@ export default function Home() {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: allMessages }),
+          body: JSON.stringify({
+            messages: allMessages,
+            model: activeModel,
+          }),
         });
 
         if (!response.ok) {
@@ -180,12 +211,10 @@ export default function Home() {
           );
         }
 
-        // Handle streaming response
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let botText = '';
 
-        // Add an initial empty bot message
         const botTimestamp = Date.now();
         setChats((prev) =>
           prev.map((chat) => {
@@ -204,7 +233,6 @@ export default function Home() {
           })
         );
 
-        // Read stream
         let buffer = '';
         while (true) {
           const { done, value } = await reader.read();
@@ -225,7 +253,6 @@ export default function Home() {
                 if (parsed.text) {
                   botText += parsed.text;
 
-                  // Update the last bot message with accumulated text
                   setChats((prev) =>
                     prev.map((chat) => {
                       if (chat.id !== activeChatId) return chat;
@@ -242,13 +269,12 @@ export default function Home() {
                   );
                 }
               } catch {
-                // Skip malformed JSON
+                // Skip partial JSON
               }
             }
           }
         }
 
-        // If no response was received, add an error message
         if (!botText) {
           setChats((prev) =>
             prev.map((chat) => {
@@ -296,7 +322,22 @@ export default function Home() {
         setIsLoading(false);
       }
     },
-    [activeChatId, chats, isLoading]
+    [activeChatId, activeModel, chats, isLoading]
+  );
+
+  const handleInsertEditedPhoto = useCallback(
+    (dataUrl, prompt) => {
+      const photoAttachment = {
+        id: generateId(),
+        name: 'MABIX-Edited-Photo.png',
+        size: Math.round(dataUrl.length * 0.75),
+        type: 'image/png',
+        isImage: true,
+        dataUrl: dataUrl,
+      };
+      sendMessage(prompt || 'Analyze this edited photo created with MABIX 2.0 Core Ultra.', [photoAttachment]);
+    },
+    [sendMessage]
   );
 
   const handleSuggestionClick = useCallback(
@@ -306,11 +347,25 @@ export default function Home() {
     [sendMessage]
   );
 
+  const handleOpenTasks = useCallback(() => {
+    sendMessage('Help me create and organize a structured, actionable task list and milestone roadmap for my current goals.');
+    setIsSidebarOpen(false);
+  }, [sendMessage]);
+
+  const handleOpenProjects = useCallback(() => {
+    sendMessage('I want to start a new project. Help me define the scope, tech stack, architecture, and step-by-step roadmap.');
+    setIsSidebarOpen(false);
+  }, [sendMessage]);
+
+  const handleOpenDiscover = useCallback(() => {
+    sendMessage('Show me what advanced capabilities MABIX 2.0 Core Ultra offers, including photo editing, deep reasoning, and multimodal tools.');
+    setIsSidebarOpen(false);
+  }, [sendMessage]);
+
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
   }, []);
 
-  // Don't render until hydrated to avoid mismatch
   if (!isHydrated) {
     return (
       <div
@@ -331,9 +386,10 @@ export default function Home() {
   }
 
   const hasMessages = activeChat && activeChat.messages.length > 0;
+  const isUltra = activeModel === 'mabix-2.0-ultra';
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isUltra ? 'ultra-mode' : ''}`}>
       <Sidebar
         chats={chats}
         activeChatId={activeChatId}
@@ -342,22 +398,44 @@ export default function Home() {
         onDeleteChat={deleteChat}
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
+        onOpenImagine={() => handleOpenImagine()}
+        onOpenTasks={handleOpenTasks}
+        onOpenProjects={handleOpenProjects}
+        onOpenDiscover={handleOpenDiscover}
+        activeModel={activeModel}
+        onToggleUpgrade={handleToggleUpgrade}
       />
 
-      <main className="main-content">
-        <Header onToggleSidebar={toggleSidebar} />
+      <main className={`main-content ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`}>
+        <Header
+          onToggleSidebar={toggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+          activeModel={activeModel}
+          onSelectModel={handleSelectModel}
+          onOpenImagine={() => handleOpenImagine()}
+        />
 
         {hasMessages ? (
-          <ChatArea
-            messages={activeChat.messages}
-            isLoading={isLoading}
-          />
+          <ChatArea messages={activeChat.messages} isLoading={isLoading} />
         ) : (
           <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
         )}
 
-        <MessageInput onSend={sendMessage} isLoading={isLoading} />
+        <MessageInput
+          onSend={sendMessage}
+          isLoading={isLoading}
+          onOpenImagineWithImage={(img) => handleOpenImagine(img)}
+          activeModel={activeModel}
+        />
       </main>
+
+      {/* Imagine Photo Studio Modal */}
+      <PhotoEditorModal
+        isOpen={isImagineOpen}
+        onClose={() => setIsImagineOpen(false)}
+        onInsertToChat={handleInsertEditedPhoto}
+        initialImage={imagineInitialImage}
+      />
     </div>
   );
 }
