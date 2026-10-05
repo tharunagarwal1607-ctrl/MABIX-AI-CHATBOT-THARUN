@@ -7,9 +7,13 @@ import WelcomeScreen from '@/components/WelcomeScreen';
 import ChatArea from '@/components/ChatArea';
 import MessageInput from '@/components/MessageInput';
 import PhotoEditorModal from '@/components/PhotoEditorModal';
+import LibraryView from '@/components/LibraryView';
+import CreateProjectModal from '@/components/CreateProjectModal';
+import { detectImageEditIntent, processImageDirectly } from '@/utils/imageProcessor';
 
 const STORAGE_KEY = 'MABIX_chats';
 const MODEL_STORAGE_KEY = 'MABIX_active_model';
+const PROJECTS_STORAGE_KEY = 'MABIX_projects';
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -28,8 +32,15 @@ export default function Home() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // View state: 'chat' vs 'library'
+  const [currentView, setCurrentView] = useState('chat');
+
+  // Projects State
+  const [projects, setProjects] = useState([]);
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
 
   // MABIX Engine State: 'mabix-1.0' vs 'mabix-2.0-ultra'
   const [activeModel, setActiveModel] = useState('mabix-1.0');
@@ -46,6 +57,11 @@ export default function Home() {
       }
       const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
       if (savedModel) setActiveModel(savedModel);
+
+      const savedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
+      if (savedProjects) {
+        setProjects(JSON.parse(savedProjects));
+      }
 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -76,6 +92,7 @@ export default function Home() {
     if (!isHydrated) return;
     try {
       localStorage.setItem(MODEL_STORAGE_KEY, activeModel);
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
 
       const storageChats = chats.map((chat) => ({
         ...chat,
@@ -105,7 +122,7 @@ export default function Home() {
     } catch (e) {
       console.warn('localStorage save warning:', e);
     }
-  }, [chats, activeChatId, activeModel, isHydrated]);
+  }, [chats, activeChatId, activeModel, projects, isHydrated]);
 
   const activeChat = chats.find((c) => c.id === activeChatId) || null;
 
@@ -113,11 +130,13 @@ export default function Home() {
     const newChat = createNewChatObj('New Chat');
     setChats((prev) => [newChat, ...prev]);
     setActiveChatId(newChat.id);
+    setCurrentView('chat');
     setIsSidebarOpen(false);
   }, []);
 
   const selectChat = useCallback((id) => {
     setActiveChatId(id);
+    setCurrentView('chat');
     setIsSidebarOpen(false);
   }, []);
 
@@ -145,6 +164,43 @@ export default function Home() {
     setIsSidebarOpen(false);
   }, []);
 
+  const handleOpenLibrary = useCallback(() => {
+    setCurrentView('library');
+    setIsSidebarOpen(false);
+  }, []);
+
+  const handleOpenProjects = useCallback(() => {
+    setIsCreateProjectOpen(true);
+    setIsSidebarOpen(false);
+  }, []);
+
+  const handleCreateProject = useCallback(
+    (newProject) => {
+      setProjects((prev) => [newProject, ...prev]);
+      // Create a dedicated project chat
+      const projectChat = createNewChatObj(`Project: ${newProject.name}`);
+      setChats((prev) => [projectChat, ...prev]);
+      setActiveChatId(projectChat.id);
+      setCurrentView('chat');
+    },
+    []
+  );
+
+  const handleInspirePrompt = useCallback(
+    (prompt) => {
+      setCurrentView('chat');
+      // Create new chat for inspiration
+      const inspireChat = createNewChatObj('Image Inspiration');
+      setChats((prev) => [inspireChat, ...prev]);
+      setActiveChatId(inspireChat.id);
+      // Automatically send prompt
+      setTimeout(() => {
+        sendMessage(prompt);
+      }, 50);
+    },
+    []
+  );
+
   const handleSelectModel = useCallback((modelId) => {
     setActiveModel(modelId);
   }, []);
@@ -159,6 +215,23 @@ export default function Home() {
     async (text, attachments = []) => {
       const trimmed = (text || '').trim();
       if ((!trimmed && attachments.length === 0) || isLoading || !activeChatId) return;
+
+      // -------------------------------------------------------------
+      // AUTOMATED IN-CHAT BACKGROUND REMOVAL & SCENE SWAP (ChatGPT 5.5)
+      // -------------------------------------------------------------
+      let inlineEditedImage = null;
+      let inlineEditLabel = null;
+
+      if (attachments && attachments.length > 0) {
+        const imgAtt = attachments.find((a) => a.isImage && a.dataUrl);
+        if (imgAtt) {
+          const editIntent = detectImageEditIntent(trimmed);
+          if (editIntent.shouldEdit) {
+            inlineEditedImage = await processImageDirectly(imgAtt.dataUrl, editIntent.action);
+            inlineEditLabel = editIntent.label;
+          }
+        }
+      }
 
       const userMessage = {
         role: 'user',
@@ -227,6 +300,8 @@ export default function Home() {
                   role: 'assistant',
                   content: '',
                   timestamp: botTimestamp,
+                  editedImage: inlineEditedImage,
+                  editLabel: inlineEditLabel,
                 },
               ],
             };
@@ -262,6 +337,8 @@ export default function Home() {
                         msgs[lastIdx] = {
                           ...msgs[lastIdx],
                           content: botText,
+                          editedImage: inlineEditedImage,
+                          editLabel: inlineEditLabel,
                         };
                       }
                       return { ...chat, messages: msgs };
@@ -275,7 +352,7 @@ export default function Home() {
           }
         }
 
-        if (!botText) {
+        if (!botText && !inlineEditedImage) {
           setChats((prev) =>
             prev.map((chat) => {
               if (chat.id !== activeChatId) return chat;
@@ -335,6 +412,7 @@ export default function Home() {
         isImage: true,
         dataUrl: dataUrl,
       };
+      setCurrentView('chat');
       sendMessage(prompt || 'Analyze this edited photo created with MABIX 2.0 Core Ultra.', [photoAttachment]);
     },
     [sendMessage]
@@ -349,16 +427,13 @@ export default function Home() {
 
   const handleOpenTasks = useCallback(() => {
     sendMessage('Help me create and organize a structured, actionable task list and milestone roadmap for my current goals.');
-    setIsSidebarOpen(false);
-  }, [sendMessage]);
-
-  const handleOpenProjects = useCallback(() => {
-    sendMessage('I want to start a new project. Help me define the scope, tech stack, architecture, and step-by-step roadmap.');
+    setCurrentView('chat');
     setIsSidebarOpen(false);
   }, [sendMessage]);
 
   const handleOpenDiscover = useCallback(() => {
-    sendMessage('Show me what advanced capabilities MABIX 2.0 Core Ultra offers, including photo editing, deep reasoning, and multimodal tools.');
+    sendMessage('Show me what advanced capabilities MABIX 2.0 Core Ultra offers, including photo editing, deep coding, and complex debugging.');
+    setCurrentView('chat');
     setIsSidebarOpen(false);
   }, [sendMessage]);
 
@@ -399,6 +474,7 @@ export default function Home() {
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
         onOpenImagine={() => handleOpenImagine()}
+        onOpenLibrary={handleOpenLibrary}
         onOpenTasks={handleOpenTasks}
         onOpenProjects={handleOpenProjects}
         onOpenDiscover={handleOpenDiscover}
@@ -415,18 +491,28 @@ export default function Home() {
           onOpenImagine={() => handleOpenImagine()}
         />
 
-        {hasMessages ? (
+        {/* View Switch: Library Gallery View vs Chat Area */}
+        {currentView === 'library' ? (
+          <LibraryView
+            onOpenImagine={() => handleOpenImagine()}
+            onInspirePrompt={handleInspirePrompt}
+            onBackToChat={() => setCurrentView('chat')}
+          />
+        ) : hasMessages ? (
           <ChatArea messages={activeChat.messages} isLoading={isLoading} />
         ) : (
           <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
         )}
 
-        <MessageInput
-          onSend={sendMessage}
-          isLoading={isLoading}
-          onOpenImagineWithImage={(img) => handleOpenImagine(img)}
-          activeModel={activeModel}
-        />
+        {/* Chat input only shown in chat view */}
+        {currentView === 'chat' && (
+          <MessageInput
+            onSend={sendMessage}
+            isLoading={isLoading}
+            onOpenImagineWithImage={(img) => handleOpenImagine(img)}
+            activeModel={activeModel}
+          />
+        )}
       </main>
 
       {/* Imagine Photo Studio Modal */}
@@ -435,6 +521,13 @@ export default function Home() {
         onClose={() => setIsImagineOpen(false)}
         onInsertToChat={handleInsertEditedPhoto}
         initialImage={imagineInitialImage}
+      />
+
+      {/* Create Project Modal matching Image 2 */}
+      <CreateProjectModal
+        isOpen={isCreateProjectOpen}
+        onClose={() => setIsCreateProjectOpen(false)}
+        onCreateProject={handleCreateProject}
       />
     </div>
   );
