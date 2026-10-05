@@ -43,16 +43,18 @@ export default function Header({
       </div>
 
       <div className="header-right">
-        {/* Quick Imagine Photo Studio Shortcut */}
-        <button
-          type="button"
-          className="header-imagine-btn"
-          onClick={onOpenImagine}
-          title="Open Imagine Photo Studio (Background Removal & Scene Swap)"
-        >
-          <span className="btn-icon">🎞️</span>
-          <span className="btn-text">Imagine Studio</span>
-        </button>
+        {/* Quick Imagine Photo Studio Shortcut - Only in MABIX 2.0 Core Ultra */}
+        {isUltra && (
+          <button
+            type="button"
+            className="header-imagine-btn"
+            onClick={onOpenImagine}
+            title="Open Imagine Photo Studio (Background Removal & Scene Swap)"
+          >
+            <span className="btn-icon">🎞️</span>
+            <span className="btn-text">Imagine Studio</span>
+          </button>
+        )}
 
         {/* Model Selector Dropdown */}
         <div className="model-selector-wrapper" ref={dropdownRef}>
