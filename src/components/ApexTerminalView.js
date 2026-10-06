@@ -189,59 +189,183 @@ export default function ApexTerminalView({
     }
   };
 
-  // Jarvis Local System Commands Evaluator
+  const openExternalUrl = (url) => {
+    try {
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (e) {
+      console.warn('Window open fallback error:', e);
+    }
+  };
+
+  // Jarvis Local System Commands Evaluator — Immediate execution & zero unnecessary chatter
   const executeLocalJarvisCommand = (cmdText) => {
-    const lower = cmdText.toLowerCase();
+    const raw = cmdText.trim();
+    const lower = raw.toLowerCase();
 
-    // 1. Web search / app opening
-    if (lower.startsWith('open youtube') || lower.includes('search youtube')) {
-      const q = lower.replace(/open youtube|search youtube|on youtube/g, '').trim();
-      const url = q ? `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}` : 'https://www.youtube.com';
-      window.open(url, '_blank');
-      return `Opening YouTube ${q ? `for "${q}"` : ''}, sir.`;
+    // 1. YouTube — Immediately open, concise & direct response
+    if (lower.includes('youtube') || lower.includes('open yt') || lower === 'yt') {
+      let q = lower
+        .replace(/jarvis/gi, '')
+        .replace(/can you/gi, '')
+        .replace(/could you/gi, '')
+        .replace(/please/gi, '')
+        .replace(/open youtube and (search for|search|play)/gi, '')
+        .replace(/open youtube (to|and)?/gi, '')
+        .replace(/search (for )?on youtube/gi, '')
+        .replace(/search youtube (for )?/gi, '')
+        .replace(/open youtube/gi, '')
+        .replace(/launch youtube/gi, '')
+        .replace(/open yt/gi, '')
+        .replace(/on youtube/gi, '')
+        .replace(/youtube/gi, '')
+        .replace(/play/gi, '')
+        .trim();
+
+      const url = q
+        ? `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`
+        : 'https://www.youtube.com';
+      openExternalUrl(url);
+      return {
+        text: q ? `Opening YouTube for "${q}".` : 'Opening YouTube, sir.',
+        actionUrl: url,
+        actionLabel: 'YouTube',
+      };
     }
 
-    if (lower.startsWith('open google') || lower.startsWith('search google for') || lower.startsWith('google ')) {
-      const q = lower.replace(/open google|search google for|google/g, '').trim();
+    // 2. Chrome / Browser — Immediately open Chrome / Google
+    if (
+      lower.includes('chrome') ||
+      lower.includes('browser') ||
+      lower.includes('google chrome') ||
+      lower === 'open chrome' ||
+      lower === 'launch chrome'
+    ) {
+      const url = 'https://www.google.com';
+      openExternalUrl(url);
+      return {
+        text: 'Opening Google Chrome, sir.',
+        actionUrl: url,
+        actionLabel: 'Google Chrome',
+      };
+    }
+
+    // 3. Google Search
+    if (lower.includes('google') || lower.startsWith('search for ')) {
+      let q = lower
+        .replace(/jarvis|can you|could you|please|open google|search google for|search google|search for|google/gi, '')
+        .trim();
       const url = q ? `https://www.google.com/search?q=${encodeURIComponent(q)}` : 'https://www.google.com';
-      window.open(url, '_blank');
-      return `Executing Google search for ${q || 'web queries'}, sir.`;
+      openExternalUrl(url);
+      return {
+        text: q ? `Searching Google for "${q}".` : 'Opening Google, sir.',
+        actionUrl: url,
+        actionLabel: 'Google Search',
+      };
     }
 
-    if (lower.includes('open github')) {
-      window.open('https://github.com', '_blank');
-      return 'Opening GitHub repository interface, sir.';
+    // 4. GitHub
+    if (lower.includes('github')) {
+      const url = 'https://github.com';
+      openExternalUrl(url);
+      return {
+        text: 'Opening GitHub, sir.',
+        actionUrl: url,
+        actionLabel: 'GitHub',
+      };
     }
 
-    if (lower.includes('open wikipedia')) {
-      const q = lower.replace(/open wikipedia|search wikipedia for/g, '').trim();
-      const url = q ? `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(q)}` : 'https://www.wikipedia.org';
-      window.open(url, '_blank');
-      return `Accessing Wikipedia archives for ${q || 'research'}, sir.`;
+    // 5. Wikipedia
+    if (lower.includes('wikipedia')) {
+      let q = lower
+        .replace(/jarvis|can you|could you|please|open wikipedia|search wikipedia for|search wikipedia|wikipedia/gi, '')
+        .trim();
+      const url = q
+        ? `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(q)}`
+        : 'https://www.wikipedia.org';
+      openExternalUrl(url);
+      return {
+        text: q ? `Accessing Wikipedia archives for "${q}".` : 'Opening Wikipedia, sir.',
+        actionUrl: url,
+        actionLabel: 'Wikipedia',
+      };
     }
 
-    // 2. Play music
-    if (lower.includes('play music') || lower.includes('play lofi') || lower.includes('play songs')) {
-      window.open('https://www.youtube.com/results?search_query=lofi+hip+hop+radio', '_blank');
-      return 'Initializing audio entertainment stream on YouTube Music, sir.';
+    // 6. Gmail / Email
+    if (lower.includes('gmail') || lower.includes('email') || lower.includes('mail')) {
+      const url = 'https://mail.google.com';
+      openExternalUrl(url);
+      return {
+        text: 'Opening Gmail, sir.',
+        actionUrl: url,
+        actionLabel: 'Gmail',
+      };
     }
 
-    // 3. Set timer
-    const timerMatch = lower.match(/set (?:a )?timer (?:for )?(\d+)\s*(min|minute|sec|second)/);
+    // 7. Maps
+    if (lower.includes('maps') || lower.includes('google maps')) {
+      const url = 'https://maps.google.com';
+      openExternalUrl(url);
+      return {
+        text: 'Opening Google Maps, sir.',
+        actionUrl: url,
+        actionLabel: 'Google Maps',
+      };
+    }
+
+    // 8. WhatsApp
+    if (lower.includes('whatsapp')) {
+      const url = 'https://web.whatsapp.com';
+      openExternalUrl(url);
+      return {
+        text: 'Opening WhatsApp Web, sir.',
+        actionUrl: url,
+        actionLabel: 'WhatsApp Web',
+      };
+    }
+
+    // 9. Play music
+    if (lower.includes('play music') || lower.includes('play song') || lower.includes('play songs') || lower.includes('play lofi')) {
+      let song = lower.replace(/jarvis|can you|could you|please|play music|play song|play songs|play lofi|play/gi, '').trim();
+      const url = song
+        ? `https://www.youtube.com/results?search_query=${encodeURIComponent(song)}`
+        : 'https://www.youtube.com/results?search_query=lofi+hip+hop+radio';
+      openExternalUrl(url);
+      return {
+        text: song ? `Playing "${song}" on YouTube, sir.` : 'Playing music on YouTube, sir.',
+        actionUrl: url,
+        actionLabel: 'YouTube Music',
+      };
+    }
+
+    // 10. Set timer
+    const timerMatch = lower.match(/(?:set|start)(?: a)? timer (?:for )?(\d+)\s*(min|minute|sec|second)/i);
     if (timerMatch) {
       const val = parseInt(timerMatch[1], 10);
-      const isMin = timerMatch[2].startsWith('min');
+      const isMin = timerMatch[2].toLowerCase().startsWith('min');
       const seconds = isMin ? val * 60 : val;
       setActiveTimers((prev) => [
         ...prev,
         { id: Date.now().toString(), label: `${val} ${timerMatch[2]}`, remaining: seconds },
       ]);
-      return `Timer armed for ${val} ${timerMatch[2]}s, sir. Telemetry active.`;
+      return {
+        text: `Timer set for ${val} ${timerMatch[2]}.`,
+      };
     }
 
-    // 4. System diagnostics
+    // 11. System diagnostics
     if (lower.includes('system diagnostic') || lower.includes('system status') || lower.includes('status report')) {
-      return 'All systems nominal. Neural core operational at 98% efficiency. 16 compute cores synchronized. Network throughput: 100 Mb/s. MK VI Interface fully armed.';
+      return {
+        text: 'All systems nominal. Neural core operational at 98% efficiency. 16 cores synchronized. MK VI Interface online.',
+      };
     }
 
     return null;
@@ -273,19 +397,23 @@ export default function ApexTerminalView({
     // Check if it matches a local Jarvis action
     const localResult = executeLocalJarvisCommand(cmd);
     if (localResult) {
-      setTimeout(() => {
-        setCommsLog((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            sender: 'JARVIS',
-            time: new Date().toTimeString().split(' ')[0],
-            type: 'bot',
-            text: localResult,
-          },
-        ]);
-        speakResponse(localResult);
-      }, 300);
+      const resText = typeof localResult === 'string' ? localResult : localResult.text;
+      const actionUrl = typeof localResult === 'object' ? localResult.actionUrl : null;
+      const actionLabel = typeof localResult === 'object' ? localResult.actionLabel : null;
+
+      setCommsLog((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: 'JARVIS',
+          time: new Date().toTimeString().split(' ')[0],
+          type: 'bot',
+          text: resText,
+          actionUrl,
+          actionLabel,
+        },
+      ]);
+      speakResponse(resText);
       return;
     }
 
@@ -643,6 +771,19 @@ export default function ApexTerminalView({
                   <span className="comms-time">{log.time}</span>
                 </div>
                 <div className="comms-text">{log.text}</div>
+                {log.actionUrl && (
+                  <div className="comms-action-wrapper" style={{ marginTop: '6px' }}>
+                    <a
+                      href={log.actionUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="comms-action-link-btn"
+                      title={`Open ${log.actionLabel || 'Link'}`}
+                    >
+                      ↗ Launch {log.actionLabel || 'App'}
+                    </a>
+                  </div>
+                )}
               </div>
             ))}
             <div ref={commsEndRef} />
