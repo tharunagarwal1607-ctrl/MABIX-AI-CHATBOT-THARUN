@@ -526,6 +526,7 @@ export default function Home() {
             isLoading={isLoading}
             onOpenImagineWithImage={(img) => handleOpenImagine(img)}
             activeModel={activeModel}
+            onOpenJarvis={() => handleSelectModel('mabix-3.0-apex')}
           />
         )}
       </main>
