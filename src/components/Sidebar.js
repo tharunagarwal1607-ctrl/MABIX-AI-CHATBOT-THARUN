@@ -38,7 +38,7 @@ export default function Sidebar({
                   ? '3.0 CORE (APEX)'
                   : isUltra
                   ? '2.0 CORE ULTRA'
-                  : 'AI FOR YOUR JOURNEY'}
+                  : 'AN INTELLIGENCE BOT'}
               </span>
             </div>
           </div>
