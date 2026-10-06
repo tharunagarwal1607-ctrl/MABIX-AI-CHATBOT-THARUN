@@ -23,6 +23,7 @@ export default function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const isApex = activeModel === 'mabix-3.0-apex';
   const isUltra = activeModel === 'mabix-2.0-ultra';
 
   return (
@@ -38,12 +39,16 @@ export default function Header({
         <div className="header-brand">
           <img src="/logo.png" alt="MABIX Logo" className="header-logo-img" />
           <h1 className="header-title">MABIX</h1>
-          {isUltra && <span className="header-ultra-pill">2.0 ULTRA</span>}
+          {isApex ? (
+            <span className="header-apex-pill">3.0 APEX</span>
+          ) : isUltra ? (
+            <span className="header-ultra-pill">2.0 ULTRA</span>
+          ) : null}
         </div>
       </div>
 
       <div className="header-right">
-        {/* Quick Imagine Photo Studio Shortcut - Only in MABIX 2.0 Core Ultra */}
+        {/* Quick Imagine Photo Studio Shortcut - In MABIX 2.0 Core Ultra */}
         {isUltra && (
           <button
             type="button"
@@ -60,13 +65,17 @@ export default function Header({
         <div className="model-selector-wrapper" ref={dropdownRef}>
           <button
             type="button"
-            className={`model-selector ${isUltra ? 'ultra-active' : ''}`}
+            className={`model-selector ${isApex ? 'apex-active' : isUltra ? 'ultra-active' : ''}`}
             onClick={() => setDropdownOpen((prev) => !prev)}
             title="Select AI Engine"
           >
-            <span className={`model-status-dot ${isUltra ? 'gold' : 'purple'}`}></span>
+            <span className={`model-status-dot ${isApex ? 'cyan' : isUltra ? 'gold' : 'purple'}`}></span>
             <span className="model-name">
-              {isUltra ? 'MABIX 2.0 (core ultra)' : 'MABIX 1.0 (core)'}
+              {isApex
+                ? 'MABIX 3.0 CORE (APEX)'
+                : isUltra
+                ? 'MABIX 2.0 (core ultra)'
+                : 'MABIX 1.0 (core)'}
             </span>
             <span className="dropdown-arrow">{dropdownOpen ? '▴' : '▾'}</span>
           </button>
@@ -76,14 +85,14 @@ export default function Header({
               <div className="dropdown-header">Select MABIX Engine</div>
 
               <div
-                className={`dropdown-item ${!isUltra ? 'selected' : ''}`}
+                className={`dropdown-item ${activeModel === 'mabix-1.0' ? 'selected' : ''}`}
                 onClick={() => {
                   onSelectModel('mabix-1.0');
                   setDropdownOpen(false);
                 }}
               >
                 <div className="item-radio">
-                  <span className={`dot ${!isUltra ? 'active' : ''}`} />
+                  <span className={`dot ${activeModel === 'mabix-1.0' ? 'active' : ''}`} />
                 </div>
                 <div className="item-content">
                   <div className="item-title-row">
@@ -97,22 +106,43 @@ export default function Header({
               </div>
 
               <div
-                className={`dropdown-item ultra ${isUltra ? 'selected' : ''}`}
+                className={`dropdown-item ultra ${activeModel === 'mabix-2.0-ultra' ? 'selected' : ''}`}
                 onClick={() => {
                   onSelectModel('mabix-2.0-ultra');
                   setDropdownOpen(false);
                 }}
               >
                 <div className="item-radio">
-                  <span className={`dot gold ${isUltra ? 'active' : ''}`} />
+                  <span className={`dot gold ${activeModel === 'mabix-2.0-ultra' ? 'active' : ''}`} />
                 </div>
                 <div className="item-content">
                   <div className="item-title-row">
                     <span className="item-title gold-text">MABIX 2.0 (core ultra)</span>
-                    <span className="item-tag ultra">NEW • ULTRA</span>
+                    <span className="item-tag ultra">ULTRA • STUDIO</span>
                   </div>
                   <p className="item-desc">
                     Photo Studio editing, background removal, scenic swap, and deep multimodal intelligence.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className={`dropdown-item apex ${activeModel === 'mabix-3.0-apex' ? 'selected' : ''}`}
+                onClick={() => {
+                  onSelectModel('mabix-3.0-apex');
+                  setDropdownOpen(false);
+                }}
+              >
+                <div className="item-radio">
+                  <span className={`dot cyan ${activeModel === 'mabix-3.0-apex' ? 'active' : ''}`} />
+                </div>
+                <div className="item-content">
+                  <div className="item-title-row">
+                    <span className="item-title cyan-text">MABIX 3.0 CORE (APEX)</span>
+                    <span className="item-tag apex">NEW • OPUS 5.5</span>
+                  </div>
+                  <p className="item-desc">
+                    Jarvis AI voice assistant, holographic HUD terminal, Arc Reactor core, web search, timers & deep coding.
                   </p>
                 </div>
               </div>
