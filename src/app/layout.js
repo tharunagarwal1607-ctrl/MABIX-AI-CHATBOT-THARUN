@@ -3,7 +3,7 @@ import './globals.css';
 export const metadata = {
   title: 'MABIX - AI Chat',
   description:
-    'MABIX - AI FOR YOUR JOURNEY. Your intelligent AI assistant powered by MABIX 1.0 (core).',
+    'MABIX - AN INTELLIGENCE BOT. Your intelligent AI assistant powered by MABIX 1.0 (core).',
   keywords: 'AI, chatbot, assistant, MABIX, MABIX 1.0 (core)',
   icons: {
     icon: '/logo.png',
