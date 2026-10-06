@@ -139,7 +139,7 @@ export default function Header({
                 <div className="item-content">
                   <div className="item-title-row">
                     <span className="item-title cyan-text">MABIX 3.0 CORE (APEX)</span>
-                    <span className="item-tag apex">NEW • OPUS 5.5</span>
+                    <span className="item-tag apex">NEW • APEX CORE</span>
                   </div>
                   <p className="item-desc">
                     Jarvis AI voice assistant, holographic HUD terminal, Arc Reactor core, web search, timers & deep coding.
