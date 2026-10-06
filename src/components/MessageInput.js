@@ -7,6 +7,7 @@ export default function MessageInput({
   isLoading,
   onOpenImagineWithImage = null,
   activeModel = 'mabix-1.0',
+  onOpenJarvis = null,
 }) {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -14,6 +15,7 @@ export default function MessageInput({
   const [isDragging, setIsDragging] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [isThinkActive, setIsThinkActive] = useState(false);
 
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -370,34 +372,21 @@ export default function MessageInput({
         )}
 
         <div className="input-row">
-          {/* Upload Button */}
+          {/* Plus / Upload Button */}
           <button
             type="button"
-            className="attach-btn"
+            className="input-plus-btn"
             onClick={() => fileInputRef.current?.click()}
-            title="Upload Image, PDF, DOCX, TXT, CSV, or Code"
+            title="Upload Image, Document, or Code"
           >
-            <span className="attach-icon">📎</span>
-            <span className="attach-label">Upload</span>
+            <span className="plus-symbol">+</span>
           </button>
-
-          {/* Voice Microphone Button - Exclusive to MABIX 2.0 Core Ultra */}
-          {isUltra && (
-            <button
-              type="button"
-              className={`mic-btn ${isListening ? 'listening' : ''}`}
-              onClick={toggleListening}
-              title={isListening ? 'Stop listening' : 'Dictate with Microphone'}
-            >
-              <span className="mic-icon">{isListening ? '🔴' : '🎙️'}</span>
-            </button>
-          )}
 
           {/* Chat Text Input */}
           <textarea
             ref={textareaRef}
             className="message-input"
-            placeholder={isListening ? 'Listening...' : 'Ask MABIX'}
+            placeholder={isListening ? 'Listening...' : 'Ask anything'}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -406,14 +395,68 @@ export default function MessageInput({
             disabled={isLoading}
           />
 
-          {/* Send Button */}
+          {/* Think Mode Button */}
           <button
-            className={`send-btn ${canSend ? 'active' : ''} ${isUltra ? 'gold-btn' : ''}`}
-            onClick={handleSend}
-            disabled={!canSend}
-            title="Send message (Enter)"
+            type="button"
+            className={`input-think-btn ${isThinkActive ? 'active' : ''}`}
+            onClick={() => setIsThinkActive(!isThinkActive)}
+            title={isThinkActive ? 'Deep Think Mode Enabled' : 'Enable Deep Think Mode'}
           >
-            ➤
+            <span className="think-brain-icon">🧠</span>
+            <span className="think-label">Think</span>
+          </button>
+
+          {/* Voice Microphone Button */}
+          <button
+            type="button"
+            className={`input-mic-btn ${isListening ? 'listening' : ''}`}
+            onClick={toggleListening}
+            title={isListening ? 'Stop listening' : 'Dictate with Microphone'}
+          >
+            <svg
+              className="mic-svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+
+          {/* Send Button (shown when message is ready to send) */}
+          {canSend && (
+            <button
+              className="send-btn active"
+              onClick={handleSend}
+              title="Send message (Enter)"
+            >
+              ➤
+            </button>
+          )}
+
+          {/* J.A.R.V.I.S. Voice Mode Button — Exact Marked Blue Circular Button from Screenshot */}
+          <button
+            type="button"
+            className="jarvis-voice-mode-btn"
+            onClick={() => {
+              if (onOpenJarvis) {
+                onOpenJarvis();
+              }
+            }}
+            title="Open Jarvis AI Voice Interface (MABIX 3.0 APEX HUD)"
+          >
+            <div className="jarvis-audio-wave">
+              <span className="wave-bar bar-1"></span>
+              <span className="wave-bar bar-2"></span>
+              <span className="wave-bar bar-3"></span>
+              <span className="wave-bar bar-4"></span>
+            </div>
           </button>
         </div>
       </div>
