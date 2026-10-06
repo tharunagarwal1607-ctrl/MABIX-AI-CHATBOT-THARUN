@@ -9,6 +9,7 @@ import MessageInput from '@/components/MessageInput';
 import PhotoEditorModal from '@/components/PhotoEditorModal';
 import LibraryView from '@/components/LibraryView';
 import CreateProjectModal from '@/components/CreateProjectModal';
+import ApexTerminalView from '@/components/ApexTerminalView';
 import { detectImageEditIntent, processImageDirectly } from '@/utils/imageProcessor';
 
 const STORAGE_KEY = 'MABIX_chats';
@@ -460,6 +461,19 @@ export default function Home() {
     );
   }
 
+  if (activeModel === 'mabix-3.0-apex') {
+    return (
+      <div className="apex-app-wrapper">
+        <ApexTerminalView
+          onSendMessage={sendMessage}
+          activeModel={activeModel}
+          onSelectModel={handleSelectModel}
+          onBackToChat={() => handleSelectModel('mabix-2.0-ultra')}
+        />
+      </div>
+    );
+  }
+
   const hasMessages = activeChat && activeChat.messages.length > 0;
   const isUltra = activeModel === 'mabix-2.0-ultra';
 
@@ -479,6 +493,7 @@ export default function Home() {
         onOpenProjects={handleOpenProjects}
         onOpenDiscover={handleOpenDiscover}
         activeModel={activeModel}
+        onSelectModel={handleSelectModel}
         onToggleUpgrade={handleToggleUpgrade}
       />
 
