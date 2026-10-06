@@ -386,7 +386,7 @@ export default function MessageInput({
           <textarea
             ref={textareaRef}
             className="message-input"
-            placeholder={isListening ? 'Listening...' : 'Ask anything'}
+            placeholder={isListening ? 'Listening...' : 'ASK MABIX'}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
