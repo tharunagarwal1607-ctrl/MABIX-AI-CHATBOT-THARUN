@@ -35,7 +35,7 @@ export default function WelcomeScreen({ onSuggestionClick }) {
         <img src="/logo.png" alt="MABIX Emblem" className="welcome-logo-img" />
       </div>
       <h2 className="welcome-title">How can I help you today?</h2>
-      <p className="welcome-subtitle">AI FOR YOUR JOURNEY</p>
+      <p className="welcome-subtitle">AN INTELLIGENCE BOT</p>
 
       {/* Modern Action Pills */}
       <div className="action-pills-container">
