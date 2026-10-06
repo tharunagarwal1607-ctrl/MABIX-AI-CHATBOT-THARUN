@@ -38,14 +38,14 @@ export default function ApexTerminalView({
       sender: 'SYSTEM',
       time: '19:17:10',
       type: 'system',
-      text: 'Neural weights cached: MABIX 3.0 APEX (Opus 5.5 Tier). Full capabilities armed.',
+      text: 'Neural weights cached: MABIX 3.0 APEX. Full capabilities armed.',
     },
     {
       id: '3',
       sender: 'JARVIS',
       time: '19:17:12',
       type: 'bot',
-      text: 'Good evening. J.A.R.V.I.S. online. Rugged Neural Voice Core engaged. Ready for system operations, folder management, VS Code generation, countdown timers, and deep Opus 5.5 engineering. How may I assist you, sir?',
+      text: 'Good evening. J.A.R.V.I.S. online. Rugged Neural Voice Core engaged. Ready for system operations, folder management, VS Code generation, countdown timers, and advanced engineering. How may I assist you, sir?',
     },
   ]);
 
@@ -755,7 +755,7 @@ export default function JarvisTodoApp() {
       return;
     }
 
-    // Otherwise, dispatch to MABIX 3.0 APEX AI engine (Opus 5.5 standard)
+    // Otherwise, dispatch to MABIX 3.0 APEX AI engine
     setJarvisState('PROCESSING');
 
     try {
@@ -953,7 +953,7 @@ export default function JarvisTodoApp() {
             </div>
             <div className="telemetry-row">
               <span>MODEL</span>
-              <span className="val-cyan">APEX 3.0 (OPUS)</span>
+              <span className="val-cyan">MABIX 3.0 APEX</span>
             </div>
             <div className="telemetry-row">
               <span>CONTEXT</span>
