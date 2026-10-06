@@ -2767,4 +2767,851 @@ body {
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   MABIX 3.0 CORE (APEX) — J.A.R.V.I.S. MK VI SCI-FI HUD TERMINAL
+   ========================================================================== */
+
+/* Header & Model Selector Additions for Apex 3.0 */
+.header-apex-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #0284c7, #00f3ff);
+  color: #030712;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+}
+
+.model-selector.apex-active {
+  border-color: rgba(0, 243, 255, 0.5);
+  background: rgba(0, 243, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
+}
+
+.model-status-dot.cyan {
+  background: #00f3ff;
+  box-shadow: 0 0 8px #00f3ff;
+}
+
+.dropdown-item.apex:hover {
+  background: rgba(0, 243, 255, 0.08);
+  border-color: rgba(0, 243, 255, 0.4);
+}
+
+.dot.cyan {
+  background: #00f3ff;
+  box-shadow: 0 0 8px #00f3ff;
+}
+
+.item-title.cyan-text {
+  color: #00f3ff;
+}
+
+.item-tag.apex {
+  background: rgba(0, 243, 255, 0.15);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  color: #00f3ff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Sidebar Extensions for Apex */
+.highlight-apex {
+  border: 1px solid rgba(0, 243, 255, 0.3) !important;
+  background: rgba(0, 243, 255, 0.06) !important;
+}
+
+.highlight-apex:hover {
+  background: rgba(0, 243, 255, 0.15) !important;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.3) !important;
+}
+
+.nav-item-apex-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #00f3ff;
+  color: #030712;
+  margin-left: auto;
+}
+
+.user-profile-copilot.apex-footer {
+  border-color: rgba(0, 243, 255, 0.3);
+  background: rgba(0, 243, 255, 0.05);
+}
+
+.user-avatar-circle.apex-circle {
+  background: linear-gradient(135deg, #0284c7, #00f3ff);
+  color: #030712;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+}
+
+.upgrade-pill-btn.active-apex {
+  background: linear-gradient(135deg, #0284c7, #00f3ff);
+  color: #030712;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+.classic-quick-switch-btn {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fef08a;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.classic-quick-switch-btn:hover {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #f59e0b;
+}
+
+.classic-quick-switch-btn.apex {
+  background: rgba(0, 243, 255, 0.12);
+  border-color: rgba(0, 243, 255, 0.35);
+  color: #00f3ff;
+}
+
+.classic-quick-switch-btn.apex:hover {
+  background: rgba(0, 243, 255, 0.25);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   APEX HUD VIEWPORT & CORE LAYOUT
+   -------------------------------------------------------------------------- */
+.apex-app-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #030710;
+}
+
+.apex-hud-viewport {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #030710;
+  color: #e0f7fa;
+  font-family: 'Inter', -apple-system, monospace;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+/* Sci-Fi Ambient Grid Overlay */
+.apex-hud-viewport::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 243, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 1. TOP HEADER BAR */
+.apex-hud-topbar {
+  height: 56px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(5, 13, 24, 0.92);
+  border-bottom: 1px solid rgba(0, 243, 255, 0.22);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+.apex-topbar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.apex-brand-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 5px;
+  color: #00f3ff;
+  text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
+}
+
+.apex-brand-sub {
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  color: #38bdf8;
+  opacity: 0.85;
+}
+
+.apex-online-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(0, 243, 255, 0.08);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  color: #00f3ff;
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+  animation: pulseCyan 2.5s infinite ease-in-out;
+}
+
+.apex-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.apex-ctrl-btn {
+  background: rgba(0, 243, 255, 0.06);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  color: #7dd3fc;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.apex-ctrl-btn:hover {
+  background: rgba(0, 243, 255, 0.18);
+  border-color: #00f3ff;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
+}
+
+.apex-ctrl-btn.active {
+  background: rgba(0, 243, 255, 0.22);
+  border-color: #00f3ff;
+  color: #00f3ff;
+}
+
+.apex-ctrl-btn.model-quick-btn {
+  background: rgba(168, 85, 247, 0.14);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #e9d5ff;
+}
+
+.apex-ctrl-btn.model-quick-btn:hover {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: #c084fc;
+  color: #ffffff;
+}
+
+.apex-ctrl-btn.exit-apex-btn {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.apex-ctrl-btn.exit-apex-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+}
+
+/* 2. THREE-COLUMN HUD BODY */
+.apex-hud-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  background: radial-gradient(ellipse at 50% 45%, #07162b 0%, #030710 80%);
+}
+
+/* LEFT TELEMETRY DECK */
+.apex-left-deck {
+  width: 290px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-right: 1px solid rgba(0, 243, 255, 0.15);
+  background: rgba(3, 9, 18, 0.7);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+
+.telemetry-box {
+  background: rgba(0, 243, 255, 0.035);
+  border: 1px solid rgba(0, 243, 255, 0.16);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.telemetry-box::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 10px;
+  width: 14px;
+  height: 2px;
+  background: #00f3ff;
+  box-shadow: 0 0 6px #00f3ff;
+}
+
+.telemetry-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #00f3ff;
+  opacity: 0.85;
+}
+
+.telemetry-time-display {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #00f3ff;
+  letter-spacing: 2px;
+  text-shadow: 0 0 14px rgba(0, 243, 255, 0.75);
+}
+
+.telemetry-sub-meta {
+  font-size: 0.62rem;
+  color: #67e8f9;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+
+.telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.val-cyan {
+  color: #38bdf8;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.val-gold {
+  color: #f59e0b;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.val-green {
+  color: #10b981;
+  font-weight: 700;
+  animation: pulseGreen 1s infinite alternate;
+}
+
+.val-toggle {
+  cursor: pointer;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.val-toggle.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.telemetry-progress-bar {
+  height: 4px;
+  background: rgba(0, 243, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 2px 0 4px;
+}
+
+.telemetry-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #00f3ff);
+  box-shadow: 0 0 8px #00f3ff;
+}
+
+.audio-visualizer-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+  padding-top: 4px;
+}
+
+.audio-bar {
+  flex: 1;
+  background: #00f3ff;
+  border-radius: 2px;
+  min-height: 4px;
+  transition: height 0.12s ease;
+  opacity: 0.6;
+}
+
+.audio-bar.pulsing {
+  opacity: 1;
+  animation: soundWave 0.6s infinite ease-in-out alternate;
+  box-shadow: 0 0 6px #00f3ff;
+}
+
+/* CENTER HOLOGRAPHIC DECK */
+.apex-center-deck {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.arc-reactor-container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arc-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.arc-ring.outer-ring {
+  width: 310px;
+  height: 310px;
+  border: 2px dashed rgba(0, 243, 255, 0.45);
+  box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+  animation: spinRing 40s linear infinite;
+}
+
+.arc-ring.outer-ring.fast-spin {
+  animation: spinRing 5s linear infinite;
+  border-color: #00f3ff;
+  box-shadow: 0 0 45px rgba(0, 243, 255, 0.5);
+}
+
+.arc-ring.tick-ring {
+  width: 255px;
+  height: 255px;
+  border: 2px dotted rgba(0, 243, 255, 0.35);
+  animation: spinRingRev 28s linear infinite;
+}
+
+.arc-ring.middle-ring {
+  width: 205px;
+  height: 205px;
+  border: 2px solid rgba(0, 243, 255, 0.55);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  animation: spinRing 14s linear infinite;
+}
+
+.arc-ring.inner-ring {
+  width: 155px;
+  height: 155px;
+  border: 3px solid rgba(0, 243, 255, 0.75);
+  border-top-color: transparent;
+  animation: spinRingRev 9s linear infinite;
+}
+
+.arc-core-shield {
+  width: 105px;
+  height: 105px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 243, 255, 0.35) 0%, rgba(4, 18, 38, 0.95) 75%);
+  border: 2px solid #00f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 35px rgba(0, 243, 255, 0.6), inset 0 0 20px rgba(0, 243, 255, 0.5);
+}
+
+.arc-core-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 243, 255, 0.8);
+  animation: corePulse 2.4s infinite ease-in-out;
+}
+
+.arc-core-text {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: #ffffff;
+  text-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff;
+  z-index: 2;
+}
+
+.apex-coordinates-bar {
+  margin-top: 24px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  letter-spacing: 2.5px;
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.08);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  padding: 4px 18px;
+  border-radius: 20px;
+}
+
+.apex-suggestions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.apex-prompt-pill {
+  background: rgba(0, 243, 255, 0.06);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  color: #67e8f9;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apex-prompt-pill:hover {
+  background: rgba(0, 243, 255, 0.2);
+  border-color: #00f3ff;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+/* RIGHT COMMS LOG DECK */
+.apex-right-deck {
+  width: 350px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid rgba(0, 243, 255, 0.15);
+  background: rgba(3, 9, 18, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.comms-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+.comms-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #00f3ff;
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+}
+
+.comms-purge-btn {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comms-purge-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+}
+
+.comms-log-stream {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.comms-entry {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  animation: fadeIn 0.2s ease;
+}
+
+.comms-entry.system {
+  background: rgba(0, 243, 255, 0.05);
+  border-left: 2px solid #00f3ff;
+  color: #94a3b8;
+}
+
+.comms-entry.bot {
+  background: rgba(0, 243, 255, 0.09);
+  border-left: 3px solid #00f3ff;
+  color: #e0f7fa;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.06);
+}
+
+.comms-entry.user {
+  background: rgba(59, 130, 246, 0.15);
+  border-left: 3px solid #3b82f6;
+  color: #ffffff;
+}
+
+.comms-entry.error {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #ef4444;
+  color: #fca5a5;
+}
+
+.comms-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  font-family: monospace;
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+
+.comms-sender {
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #00f3ff;
+}
+
+.comms-text {
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* 3. BOTTOM HUD FOOTER & COMMAND BAR */
+.apex-hud-footer {
+  padding: 12px 24px;
+  background: rgba(5, 13, 24, 0.94);
+  border-top: 1px solid rgba(0, 243, 255, 0.22);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+.apex-cmd-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  border-radius: 28px;
+  padding: 4px 14px;
+  box-shadow: 0 0 16px rgba(0, 243, 255, 0.08);
+}
+
+.apex-mic-trigger {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: rgba(0, 243, 255, 0.1);
+  color: #00f3ff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apex-mic-trigger:hover {
+  background: rgba(0, 243, 255, 0.25);
+  border-color: #00f3ff;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+.apex-mic-trigger.listening {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  animation: pulseMic 1s infinite alternate;
+  box-shadow: 0 0 18px #ef4444;
+}
+
+.apex-cmd-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e0f7fa;
+  font-size: 0.88rem;
+  padding: 8px 6px;
+}
+
+.apex-cmd-input::placeholder {
+  color: rgba(0, 243, 255, 0.45);
+}
+
+.apex-send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #00f3ff, #0284c7);
+  color: #030712;
+  font-weight: 900;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.5);
+}
+
+.apex-send-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 18px rgba(0, 243, 255, 0.8);
+}
+
+.apex-ambient-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ambient-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #00f3ff;
+  cursor: pointer;
+}
+
+/* 4. KEYFRAME ANIMATIONS */
+@keyframes spinRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinRingRev {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.16); opacity: 1; box-shadow: 0 0 25px #00f3ff; }
+}
+
+@keyframes pulseCyan {
+  0%, 100% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); }
+  50% { opacity: 1; box-shadow: 0 0 16px rgba(0, 243, 255, 0.8); }
+}
+
+@keyframes pulseGreen {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; text-shadow: 0 0 8px #10b981; }
+}
+
+@keyframes soundWave {
+  0% { height: 15%; }
+  100% { height: 95%; }
+}
+
+@keyframes pulseMic {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.12); }
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 900px) {
+  .apex-left-deck {
+    display: none;
+  }
+  .apex-right-deck {
+    width: 280px;
+  }
+  .arc-reactor-container {
+    width: 240px;
+    height: 240px;
+  }
+  .arc-ring.outer-ring {
+    width: 230px;
+    height: 230px;
+  }
+  .arc-ring.tick-ring {
+    width: 190px;
+    height: 190px;
+  }
+  .arc-ring.middle-ring {
+    width: 150px;
+    height: 150px;
+  }
+  .arc-ring.inner-ring {
+    width: 110px;
+    height: 110px;
+  }
+  .arc-core-shield {
+    width: 75px;
+    height: 75px;
+  }
+}
+
+@media (max-width: 640px) {
+  .apex-right-deck {
+    display: none;
+  }
+  .apex-hud-topbar {
+    padding: 0 12px;
+  }
+  .apex-brand-sub {
+    display: none;
+  }
+  .apex-hud-footer {
+    padding: 10px 14px;
+  }
+}
+
 
