@@ -86,43 +86,15 @@ export default function Sidebar({
               <span className="nav-item-text">Imagine</span>
               <span className="nav-item-ultra-tag">PHOTO STUDIO</span>
             </button>
-
-            <button
-              className="sidebar-nav-item highlight-apex"
-              onClick={() => onSelectModel && onSelectModel('mabix-3.0-apex')}
-              title="Launch J.A.R.V.I.S. MK VI HUD Terminal"
-            >
-              <span className="nav-item-icon">⚡</span>
-              <span className="nav-item-text">Jarvis HUD</span>
-              <span className="nav-item-apex-tag">APEX 3.0</span>
-            </button>
           </div>
         ) : (
           /* ------------------------------------------------------------------ */
-          /* MABIX 1.0 CORE / Classic View                                      */
+          /* MABIX 1.0 CORE: Classic New Chat Button                            */
           /* ------------------------------------------------------------------ */
           <div className="classic-new-chat-wrapper" style={{ padding: '12px 14px 4px' }}>
             <button className="new-chat-btn" onClick={onNewChat}>
               <span className="plus-icon">+</span> New Chat
             </button>
-            <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
-              <button
-                type="button"
-                className="classic-quick-switch-btn"
-                onClick={() => onSelectModel && onSelectModel('mabix-2.0-ultra')}
-                title="Switch to MABIX 2.0 Core Ultra"
-              >
-                ✨ 2.0 Ultra
-              </button>
-              <button
-                type="button"
-                className="classic-quick-switch-btn apex"
-                onClick={() => onSelectModel && onSelectModel('mabix-3.0-apex')}
-                title="Switch to MABIX 3.0 Apex HUD"
-              >
-                ⚡ 3.0 Apex
-              </button>
-            </div>
           </div>
         )}
 
