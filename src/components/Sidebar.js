@@ -14,13 +14,19 @@ export default function Sidebar({
   onOpenProjects,
   onOpenDiscover,
   activeModel = 'mabix-1.0',
+  onSelectModel,
   onToggleUpgrade,
 }) {
+  const isApex = activeModel === 'mabix-3.0-apex';
   const isUltra = activeModel === 'mabix-2.0-ultra';
 
   return (
     <>
-      <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'} ${isUltra ? 'ultra-sidebar' : 'classic-sidebar'}`}>
+      <aside
+        className={`sidebar ${isOpen ? 'open' : 'collapsed'} ${
+          isApex ? 'apex-sidebar' : isUltra ? 'ultra-sidebar' : 'classic-sidebar'
+        }`}
+      >
         {/* Header */}
         <div className="sidebar-header">
           <div className="sidebar-brand">
@@ -28,7 +34,11 @@ export default function Sidebar({
             <div className="sidebar-brand-text">
               <span className="sidebar-brand-name">MABIX</span>
               <span className="sidebar-brand-tagline">
-                {isUltra ? '2.0 CORE ULTRA' : 'AI FOR YOUR JOURNEY'}
+                {isApex
+                  ? '3.0 CORE (APEX)'
+                  : isUltra
+                  ? '2.0 CORE ULTRA'
+                  : 'AI FOR YOUR JOURNEY'}
               </span>
             </div>
           </div>
@@ -77,19 +87,42 @@ export default function Sidebar({
               <span className="nav-item-ultra-tag">PHOTO STUDIO</span>
             </button>
 
-            <button className="sidebar-nav-item" onClick={onToggleUpgrade}>
-              <span className="nav-item-icon">🎛️</span>
-              <span className="nav-item-text">Experiments</span>
+            <button
+              className="sidebar-nav-item highlight-apex"
+              onClick={() => onSelectModel && onSelectModel('mabix-3.0-apex')}
+              title="Launch J.A.R.V.I.S. MK VI HUD Terminal"
+            >
+              <span className="nav-item-icon">⚡</span>
+              <span className="nav-item-text">Jarvis HUD</span>
+              <span className="nav-item-apex-tag">APEX 3.0</span>
             </button>
           </div>
         ) : (
           /* ------------------------------------------------------------------ */
-          /* MABIX 1.0 CORE: Classic New Chat Button                            */
+          /* MABIX 1.0 CORE / Classic View                                      */
           /* ------------------------------------------------------------------ */
           <div className="classic-new-chat-wrapper" style={{ padding: '12px 14px 4px' }}>
             <button className="new-chat-btn" onClick={onNewChat}>
               <span className="plus-icon">+</span> New Chat
             </button>
+            <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+              <button
+                type="button"
+                className="classic-quick-switch-btn"
+                onClick={() => onSelectModel && onSelectModel('mabix-2.0-ultra')}
+                title="Switch to MABIX 2.0 Core Ultra"
+              >
+                ✨ 2.0 Ultra
+              </button>
+              <button
+                type="button"
+                className="classic-quick-switch-btn apex"
+                onClick={() => onSelectModel && onSelectModel('mabix-3.0-apex')}
+                title="Switch to MABIX 3.0 Apex HUD"
+              >
+                ⚡ 3.0 Apex
+              </button>
+            </div>
           </div>
         )}
 
@@ -98,7 +131,7 @@ export default function Sidebar({
         {/* Recent Conversations */}
         <div className="sidebar-chats">
           <div className="chats-label">
-            {isUltra ? 'Recent Chats' : 'Recent Conversations'}
+            {isApex ? 'Apex Command History' : isUltra ? 'Recent Chats' : 'Recent Conversations'}
           </div>
           {chats.map((chat) => (
             <div
@@ -123,10 +156,28 @@ export default function Sidebar({
         </div>
 
         {/* ------------------------------------------------------------------ */}
-        {/* Footer: Copilot Profile (Ultra) vs Classic Profile (1.0 Core)      */}
+        {/* Footer: User Profile & Active Tier Badge                           */}
         {/* ------------------------------------------------------------------ */}
         <div className="sidebar-footer">
-          {isUltra ? (
+          {isApex ? (
+            <div className="user-profile-copilot apex-footer">
+              <div className="user-avatar-circle apex-circle">
+                <span>J</span>
+              </div>
+              <div className="user-details">
+                <span className="user-name-bold">THARUN</span>
+                <span className="user-plan-label">MABIX 3.0 APEX</span>
+              </div>
+              <button
+                type="button"
+                className="upgrade-pill-btn active-apex"
+                onClick={() => onSelectModel && onSelectModel('mabix-2.0-ultra')}
+                title="Switch back to 2.0 Ultra"
+              >
+                APEX
+              </button>
+            </div>
+          ) : isUltra ? (
             <div className="user-profile-copilot">
               <div className="user-avatar-circle">
                 <span>T</span>
@@ -138,8 +189,8 @@ export default function Sidebar({
               <button
                 type="button"
                 className="upgrade-pill-btn active-ultra"
-                onClick={onToggleUpgrade}
-                title="Switch back to MABIX 1.0 (core)"
+                onClick={() => onSelectModel && onSelectModel('mabix-3.0-apex')}
+                title="Switch to MABIX 3.0 APEX"
               >
                 ULTRA
               </button>
